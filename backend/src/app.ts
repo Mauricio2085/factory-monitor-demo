@@ -7,6 +7,8 @@ import "express-async-errors";
 import { config } from "./config/env.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import healthRoutes from "./routes/health.routes.js";
+import linesRoutes from "./routes/lines.routes.js";
+import metricsRoutes from "./routes/metrics.routes.js";
 
 const app = express();
 
@@ -34,11 +36,13 @@ if (config.nodeEnv === "development") {
 
 // Routes
 app.use("/api", healthRoutes);
+app.use("/api/lines", linesRoutes);
+app.use("/api/metrics", metricsRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
 
-// Error handler (must be last)
+// Error handler
 app.use(errorHandler);
 
 export default app;
