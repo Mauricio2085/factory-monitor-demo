@@ -1,46 +1,36 @@
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+import { getApiUrl } from "./api/client";
+import { Dashboard } from "./pages/Dashboard";
+import { LineDetail } from "./pages/LineDetail";
 
 function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<any>(null);
+  const [lastUpdate, setLastUpdate] = useState<{
+    lineId: number;
+    timestamp: string;
+    status: string;
+    currentCount: number;
+  } | null>(null);
 
   useEffect(() => {
-    // Test API connection
-    fetch("http://localhost:3000/api/health")
+    fetch(getApiUrl("/api/health"))
       .then((res) => res.json())
       .then(() => setIsConnected(true))
       .catch(() => setIsConnected(false));
 
-    // Initialize Socket.io
-    const newSocket = io("http://localhost:3000", {
+    const baseUrl = getApiUrl("");
+    const newSocket = io(baseUrl, {
       transports: ["websocket", "polling"],
     });
 
-    // Connection events
-    newSocket.on("connect", () => {
-      console.log("✅ WebSocket connected:", newSocket.id);
-      setSocket(newSocket);
-    });
+    newSocket.on("connect", () => setSocket(newSocket));
+    newSocket.on("disconnect", () => setSocket(null));
+    newSocket.on("welcome", () => {});
+    newSocket.on("production-update", (data) => setLastUpdate(data));
 
-    newSocket.on("disconnect", () => {
-      console.log("❌ WebSocket disconnected");
-      setSocket(null);
-    });
-
-    // Listen to welcome message
-    newSocket.on("welcome", (data) => {
-      console.log("📨 Welcome message:", data);
-    });
-
-    // Listen to production updates
-    newSocket.on("production-update", (data) => {
-      console.log("📊 Production update:", data);
-      setLastUpdate(data);
-    });
-
-    // Cleanup on unmount
     return () => {
       newSocket.close();
     };
@@ -50,11 +40,11 @@ function App() {
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Factory Monitor Dashboard</h1>
+          <h1 className="mb-2 text-4xl font-bold">Factory Monitor Dashboard</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div
-                className={`w-3 h-3 rounded-full ${
+                className={`h-3 w-3 rounded-full ${
                   isConnected ? "bg-green-500" : "bg-red-500"
                 }`}
               />
@@ -64,7 +54,7 @@ function App() {
             </div>
             <div className="flex items-center gap-2">
               <div
-                className={`w-3 h-3 rounded-full ${
+                className={`h-3 w-3 rounded-full ${
                   socket ? "bg-green-500 animate-pulse" : "bg-red-500"
                 }`}
               />
@@ -76,42 +66,13 @@ function App() {
         </header>
 
         <main>
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-6">
-            <h2 className="text-2xl font-semibold mb-4">
-              Real-time Manufacturing Operations
-            </h2>
-            <p className="text-gray-300">
-              Built from 15+ years of plant maintenance and operations
-              management experience.
-            </p>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-700/50 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Status</div>
-                <div className="text-xl font-semibold">System Ready</div>
-              </div>
-              <div className="bg-gray-700/50 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">
-                  Production Lines
-                </div>
-                <div className="text-xl font-semibold">3 Active</div>
-              </div>
-              <div className="bg-gray-700/50 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Monitoring</div>
-                <div className="text-xl font-semibold">
-                  OEE • Downtime • Quality
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Real-time data display */}
           {lastUpdate && (
-            <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            <div className="mb-6 rounded-lg border border-blue-700 bg-blue-900/30 p-6">
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                 Live Production Data
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                 <div>
                   <div className="text-gray-400">Line ID</div>
                   <div className="font-mono text-blue-400">
@@ -139,6 +100,11 @@ function App() {
               </div>
             </div>
           )}
+
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/lines/:id" element={<LineDetail />} />
+          </Routes>
         </main>
       </div>
     </div>

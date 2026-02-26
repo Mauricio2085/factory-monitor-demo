@@ -9,7 +9,7 @@ export function getApiUrl(path: string): string {
 }
 
 export async function apiFetch<T>(path: string): Promise<T> {
-  const url = getApiUrl(path.startsWith("/api") ? path : `/api${path}`);
+  const url = getApiUrl(path.startsWith("/api") ? path : `/api/${path}`);
   const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
