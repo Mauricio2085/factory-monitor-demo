@@ -1,4 +1,5 @@
 -- Drop tables if exist (for clean reinstall)
+DROP TABLE IF EXISTS machine_telemetry CASCADE;
 DROP TABLE IF EXISTS quality_checks CASCADE;
 DROP TABLE IF EXISTS downtime_events CASCADE;
 DROP TABLE IF EXISTS production_runs CASCADE;
