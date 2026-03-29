@@ -22,6 +22,17 @@ export const config = {
   cors: {
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
   },
+
+  /** MQTT broker URL (e.g. mqtt://localhost:1883). If unset, MQTT ingestion is disabled. */
+  mqtt: {
+    url: process.env.MQTT_URL || "",
+    topicPrefix: (process.env.MQTT_TOPIC_PREFIX || "factory").replace(/\/+$/, ""),
+  },
+
+  /** Shared secret for POST /api/internal/telemetry. If unset, the HTTP route is disabled. */
+  ingestion: {
+    token: process.env.INGESTION_TOKEN || "",
+  },
 } as const;
 
 export const isDevelopment = config.nodeEnv === "development";
