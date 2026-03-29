@@ -1,14 +1,5 @@
--- Destructive reset for local/dev. Prefer a fresh DB: create database factory_monitor, then npm run db:migrate (from backend/).
--- If you apply this file manually, use the SAME database as the app (DB_NAME), e.g.:
---   psql -U postgres -d factory_monitor -f schema.sql
--- Default `psql -U postgres` connects to database "postgres", so tables would be missing from factory_monitor.
-
--- Drop tables if exist (for clean reinstall)
-DROP TABLE IF EXISTS machine_telemetry CASCADE;
-DROP TABLE IF EXISTS quality_checks CASCADE;
-DROP TABLE IF EXISTS downtime_events CASCADE;
-DROP TABLE IF EXISTS production_runs CASCADE;
-DROP TABLE IF EXISTS production_lines CASCADE;
+-- Relational core (same as schema.sql, without DROP). Runs before Timescale telemetry.
+-- Apply manually with: psql -U postgres -d factory_monitor -f schema.sql  (or use npm run db:migrate)
 
 -- Production Lines
 CREATE TABLE production_lines (

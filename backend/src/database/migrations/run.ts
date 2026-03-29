@@ -25,6 +25,11 @@ async function getAppliedMigrationNames(): Promise<Set<string>> {
 }
 
 async function run(): Promise<void> {
+  const dbName = process.env.DB_NAME || "factory_monitor";
+  const dbHost = process.env.DB_HOST || "localhost";
+  const dbPort = process.env.DB_PORT || "5432";
+  console.log(`Migrations target: ${dbName} @ ${dbHost}:${dbPort}`);
+
   await ensureMigrationsTable();
   const applied = await getAppliedMigrationNames();
   const files = (await readdir(__dirname))
